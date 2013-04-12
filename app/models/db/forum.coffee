@@ -1,28 +1,12 @@
-mongoose = exports.mongoose = require "mongoose"
+mongoose = require("./connect").mongoose
+db = require("./connect").db
 
-bcrypt = require "bcrypt"
-
-stringHelper = require "../../helpers/string"
-
-SALT_WORK_FACTOR = 20
+stringHelper = require "../../../helpers/string"
 
 moment = require "moment"
 
 Schema = mongoose.Schema
-
 ObjectId = mongoose.Schema.Types.ObjectId
-
-DB_CONNECTION_STRING = process.env.XFM_STRING || "mongodb://localhost/xfmc"
-
-mongoose.connect DB_CONNECTION_STRING
-
-db = mongoose.connection
-
-db.on "error", console.error.bind console, "connection error:"
-
-db.once "open", () ->
-  console.log "Connected to #{DB_CONNECTION_STRING}"
-
 
 ReplySchema = new Schema
   _id:
@@ -30,9 +14,9 @@ ReplySchema = new Schema
     index: true
   name: 
     type: String
-    required: true
-    unique: true
-  desc: String
+  desc: 
+    type: String
+    require: true
   ip: 
     type: String
     required: true
@@ -57,6 +41,29 @@ ThreadSchema = new Schema
     default: Date.now
   replies:
     type: [ ReplySchema ]
+  forum:
+    type: String
+    ref: 'Forum'
+
+ForumSchema = new Schema
+  _id:
+    type: String
+    index: true
+  name: 
+    type: String
+    required: true
+    unique: true
+  desc: 
+    stype: String
+  ip: 
+    type: String
+    required: true
+  created:
+    type: Date
+    default: Date.now
+  forum:
+    type: String
+    ref: 'Forum'
 
 ThreadSchema.statics.process = processThread = (thread) ->
   thread["replies-count"] = thread.replies.length
@@ -73,3 +80,4 @@ ThreadSchema.statics.processThread = (threads) ->
 
 Reply = exports.Reply = db.model "Reply", ReplySchema
 Thread = exports.Thread = db.model "Thread", ThreadSchema
+Forum = exports.Forum = db.model "Forum", ForumSchema
